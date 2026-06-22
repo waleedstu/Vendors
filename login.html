@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PakPicks — Vendor Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:#F0EDE8;min-height:100vh;}
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-thumb{background:#C9A84C55;border-radius:3px;}
+button{font-family:'Inter',sans-serif;cursor:pointer;}
+input,select,textarea{font-family:'Inter',sans-serif;}
+.layout{display:flex;min-height:100vh;}
+/* SIDEBAR */
+.sidebar{width:220px;min-height:100vh;background:#0F1C2E;display:flex;flex-direction:column;flex-shrink:0;position:relative;overflow:hidden;transition:width .22s;}
+.sidebar.collapsed{width:64px;}
+.geom-bg{position:absolute;top:0;left:0;width:100%;height:100%;opacity:.05;pointer-events:none;}
+.sidebar-logo{padding:20px;border-bottom:1px solid rgba(201,168,76,.15);display:flex;align-items:center;gap:10px;position:relative;}
+.sidebar.collapsed .sidebar-logo{justify-content:center;padding:20px 0;}
+.logo-mark{width:34px;height:34px;border-radius:8px;background:#C9A84C;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#0F1C2E;flex-shrink:0;}
+.logo-text{overflow:hidden;}
+.logo-text .brand{color:#fff;font-family:'Playfair Display',serif;font-size:15px;font-weight:700;line-height:1.1;white-space:nowrap;}
+.logo-text .sub{color:#C9A84C;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;font-family:'DM Mono',monospace;white-space:nowrap;}
+.sidebar.collapsed .logo-text,.sidebar.collapsed .vendor-chip,.sidebar.collapsed .nav-label,.sidebar.collapsed .nav-badge,.sidebar.collapsed .collapse-label{display:none;}
+.vendor-chip{margin:12px 14px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:10px 12px;position:relative;}
+.vendor-chip .vname{color:#C9A84C;font-size:12px;font-weight:700;}
+.vendor-chip .vsub{color:rgba(255,255,255,.45);font-size:11px;margin-top:2px;}
+nav.sidebar-nav{flex:1;padding:12px 0;}
+.nav-item{width:100%;display:flex;align-items:center;gap:12px;padding:11px 18px;background:transparent;border:none;border-left:3px solid transparent;cursor:pointer;transition:background .15s;text-align:left;}
+.sidebar.collapsed .nav-item{justify-content:center;padding:12px 0;border-left:3px solid transparent;}
+.nav-item.active{background:rgba(201,168,76,.12);border-left-color:#C9A84C;}
+.nav-item .nav-icon{font-size:16px;color:rgba(255,255,255,.4);flex-shrink:0;}
+.nav-item.active .nav-icon{color:#C9A84C;}
+.nav-label{font-size:13px;color:rgba(255,255,255,.55);white-space:nowrap;}
+.nav-item.active .nav-label{color:#fff;font-weight:600;}
+.nav-badge{margin-left:auto;background:#D64045;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;}
+.sidebar-footer{padding:12px 0;border-top:1px solid rgba(255,255,255,.06);}
+.collapse-btn{width:100%;padding:10px 0;background:none;border:none;color:rgba(255,255,255,.35);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;gap:8px;}
+.collapse-arrow{display:inline-block;transition:transform .2s;font-size:14px;}
+.sidebar.collapsed .collapse-arrow{transform:rotate(180deg);}
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;background:#F0EDE8;}
+.topbar{padding:18px 28px;background:#fff;border-bottom:1px solid #E8EDF2;display:flex;align-items:center;justify-content:space-between;}
+.topbar-title{font-size:20px;font-weight:700;font-family:'Playfair Display',serif;color:#0F1C2E;}
+.topbar-sub{font-size:13px;color:#6B7A8D;margin-top:3px;}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.avatar{width:36px;height:36px;border-radius:50%;background:#1A3A5C;display:flex;align-items:center;justify-content:center;color:#C9A84C;font-weight:700;font-size:14px;}
+.avatar-info .aname{font-size:13px;font-weight:600;color:#0F1C2E;}
+.avatar-info .arole{font-size:11px;color:#6B7A8D;}
+.page{flex:1;overflow-y:auto;}
+.page-content{padding:28px;}
+/* CARDS */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.stat-card{background:#fff;border:1px solid #E8EDF2;border-radius:12px;padding:20px 22px;border-top:3px solid #C9A84C;}
+.stat-label{font-size:11px;font-weight:600;color:#6B7A8D;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;font-family:'DM Mono',monospace;}
+.stat-value{font-size:26px;font-weight:700;color:#0F1C2E;font-family:'Playfair Display',serif;line-height:1.1;}
+.stat-sub{font-size:12px;color:#6B7A8D;margin-top:4px;}
+/* WELCOME BANNER */
+.welcome-banner{background:#0F1C2E;border-radius:14px;padding:22px 26px;margin-bottom:24px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;}
+.welcome-banner svg{position:absolute;top:0;left:0;width:100%;height:100%;opacity:.06;pointer-events:none;}
+.welcome-content{position:relative;}
+.welcome-eyebrow{color:#C9A84C;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-family:'DM Mono',monospace;margin-bottom:6px;}
+.welcome-title{color:#fff;font-family:'Playfair Display',serif;font-size:20px;font-weight:700;}
+.welcome-sub{color:rgba(255,255,255,.55);font-size:13px;margin-top:4px;}
+.welcome-sub span{color:#C9A84C;font-weight:700;}
+.welcome-btn{background:#C9A84C;color:#0F1C2E;border:none;padding:11px 20px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;position:relative;flex-shrink:0;}
+/* TABLES */
+.card{background:#fff;border:1px solid #E8EDF2;border-radius:12px;overflow:hidden;}
+.card-header{padding:16px 20px;border-bottom:1px solid #E8EDF2;display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-weight:700;color:#0F1C2E;font-size:15px;}
+.card-link{background:none;border:none;color:#C9A84C;font-size:13px;cursor:pointer;font-weight:600;}
+table{width:100%;border-collapse:collapse;}
+thead tr{background:#F7F4EF;}
+th{padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#6B7A8D;letter-spacing:.06em;text-transform:uppercase;font-family:'DM Mono',monospace;white-space:nowrap;}
+td{padding:12px 16px;font-size:13px;color:#0F1C2E;border-top:1px solid #E8EDF2;}
+tr:nth-child(even) td{background:#FAFAF8;}
+tr.clickable{cursor:pointer;}
+tr.clickable:hover td{background:rgba(201,168,76,.05);}
+tr.row-selected td{background:rgba(201,168,76,.08)!important;}
+/* BADGE */
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.04em;font-family:'DM Mono',monospace;text-transform:uppercase;}
+/* BUTTONS */
+.btn{border:none;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .15s;}
+.btn-primary{background:#C9A84C;color:#0F1C2E;padding:10px 20px;font-size:14px;}
+.btn-ghost{background:transparent;color:#6B7A8D;border:1.5px solid #E8EDF2;padding:10px 20px;font-size:14px;}
+.btn-danger{background:#D64045;color:#fff;padding:10px 20px;font-size:14px;}
+.btn-sm{padding:6px 14px;font-size:12px;}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+/* FORMS */
+.form-group{margin-bottom:16px;}
+.form-label{display:block;font-size:13px;font-weight:600;color:#0F1C2E;margin-bottom:6px;}
+.form-label .req{color:#D64045;}
+.form-input,.form-select,.form-textarea{width:100%;padding:10px 14px;border-radius:8px;border:1.5px solid #E8EDF2;font-size:14px;color:#0F1C2E;background:#fff;outline:none;transition:border-color .15s;}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:#C9A84C;}
+.form-textarea{resize:vertical;}
+.form-hint{font-size:12px;color:#6B7A8D;margin-top:4px;}
+.form-select{appearance:none;cursor:pointer;}
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:#0F1C2E;color:#fff;padding:14px 18px;border-radius:10px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:10px;box-shadow:0 8px 30px rgba(0,0,0,.18);max-width:320px;border-left:4px solid #C9A84C;animation:slideIn .3s ease;}
+@keyframes slideIn{from{transform:translateX(120%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+.toast-close{background:none;border:none;color:rgba(255,255,255,.6);cursor:pointer;font-size:18px;padding:0;margin-left:4px;}
+/* FILTER TABS */
+.filter-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+.filter-tab{padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid #E8EDF2;background:#fff;color:#6B7A8D;font-family:'Inter',sans-serif;transition:all .15s;}
+.filter-tab.active{background:#0F1C2E;color:#fff;border-color:#0F1C2E;}
+/* SEARCH BAR */
+.search-wrap{position:relative;flex:1;}
+.search-wrap input{padding-left:36px;}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#6B7A8D;font-size:15px;pointer-events:none;}
+/* ORDER DETAIL PANEL */
+.detail-panel{background:#fff;border:1px solid #E8EDF2;border-radius:12px;overflow:hidden;align-self:start;}
+.detail-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #E8EDF2;font-size:13px;}
+.detail-row:last-child{border-bottom:none;}
+.detail-key{color:#6B7A8D;font-weight:500;}
+.detail-val{color:#0F1C2E;font-weight:600;}
+/* GRID HELPERS */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+.grid-3-4{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;}
+/* UPLOAD ZONE */
+.upload-zone{border:2px dashed #E8EDF2;border-radius:10px;padding:28px;text-align:center;color:#6B7A8D;cursor:pointer;background:#F7F4EF;}
+.upload-zone:hover{border-color:#C9A84C;}
+/* ANALYTICS BAR */
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:150px;}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.bar-fill{width:100%;border-radius:4px 4px 0 0;background:#E8EDF2;transition:height .3s;}
+.bar-fill.current{background:#C9A84C;}
+.bar-fill.recent{background:#1A3A5C;}
+.bar-label{font-size:10px;color:#6B7A8D;font-family:'DM Mono',monospace;}
+/* PRODUCT HEALTH */
+.health-item{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid #E8EDF2;}
+.health-emoji{font-size:22px;}
+.health-name{font-size:13px;font-weight:600;color:#0F1C2E;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.health-sub{font-size:11px;color:#6B7A8D;margin-top:1px;}
+/* INFO BANNER */
+.info-banner{background:#C9A84C;color:#0F1C2E;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:600;margin-bottom:20px;}
+/* SUPPORT */
+.success-box{background:#EAF5EF;border:1px solid #2D8A5E;border-radius:10px;padding:24px;text-align:center;}
+.faq-item{padding:10px 0;border-bottom:1px solid #E8EDF2;font-size:13px;color:#1A3A5C;cursor:pointer;display:flex;justify-content:space-between;}
+/* PROGRESS BAR */
+.prog-wrap{width:80px;}
+.prog-track{background:#E8EDF2;border-radius:4px;height:6px;overflow:hidden;}
+.prog-fill{background:#C9A84C;height:100%;border-radius:4px;}
+/* MONO */
+.mono{font-family:'DM Mono',monospace;}
+/* LOGIN PAGE */
+.login-screen{min-height:100vh;background:#0F1C2E;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.login-screen svg.login-bg{position:absolute;top:0;left:0;width:100%;height:100%;opacity:.06;pointer-events:none;}
+.login-card{background:#fff;border-radius:18px;padding:44px 40px;width:100%;max-width:420px;position:relative;z-index:1;box-shadow:0 24px 60px rgba(0,0,0,.3);}
+.login-logo{display:flex;align-items:center;gap:12px;margin-bottom:32px;}
+.login-logo-mark{width:42px;height:42px;border-radius:10px;background:#0F1C2E;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#C9A84C;}
+.login-logo-text .brand{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#0F1C2E;}
+.login-logo-text .sub{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;font-family:'DM Mono',monospace;color:#C9A84C;}
+.login-heading{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:#0F1C2E;margin-bottom:6px;}
+.login-sub{font-size:13px;color:#6B7A8D;margin-bottom:28px;}
+.login-error{background:#FDECEA;border:1px solid #D64045;border-radius:8px;padding:10px 14px;font-size:13px;color:#D64045;font-weight:500;margin-bottom:16px;display:none;}
+.login-error.show{display:block;}
+.login-btn{width:100%;padding:13px;background:#C9A84C;color:#0F1C2E;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;margin-top:8px;transition:opacity .15s;}
+.login-btn:hover{opacity:.9;}
+.login-footer{margin-top:24px;text-align:center;font-size:12px;color:#6B7A8D;}
+.login-footer span{color:#C9A84C;font-weight:600;}
+.show-pw{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#6B7A8D;font-size:13px;padding:4px;}
+.input-wrap{position:relative;}
+/* RESPONSIVE */
+@media(max-width:768px){
+  .login-card{margin:20px;padding:32px 24px;}
+
+  .stat-grid{grid-template-columns:1fr 1fr;}
+  .grid-2,.grid-3{grid-template-columns:1fr;}
+  .welcome-banner{flex-direction:column;gap:14px;align-items:flex-start;}
+  .topbar{padding:14px 16px;}
+  .page-content{padding:16px;}
+}
+</style>
+</head>
+<body>
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="loginScreen">
+  <svg class="login-bg" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+    <defs><pattern id="lgp" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+      <polygon points="20,3 37,11 37,29 20,37 3,29 3,11" fill="none" stroke="#C9A84C" stroke-width="1"/>
+      <polygon points="20,11 29,16 29,24 20,29 11,24 11,16" fill="none" stroke="#C9A84C" stroke-width="0.6"/>
+      <circle cx="20" cy="20" r="2.5" fill="#C9A84C" opacity="0.5"/>
+    </pattern></defs>
+    <rect width="100%" height="100%" fill="url(#lgp)"/>
+  </svg>
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-mark">P</div>
+      <div class="login-logo-text">
+        <div class="brand">PakPicks</div>
+        <div class="sub">Vendor Portal</div>
+      </div>
+    </div>
+    <div class="login-heading">Welcome back</div>
+    <div class="login-sub">Sign in with the credentials provided by PakPicks.</div>
+    <div class="login-error" id="loginError">Incorrect email or password. Please try again.</div>
+    <div class="form-group">
+      <label class="form-label">Email address</label>
+      <input class="form-input" type="email" id="loginEmail" placeholder="you@yourbrand.pk" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <div class="input-wrap">
+        <input class="form-input" type="password" id="loginPassword" placeholder="••••••••" style="padding-right:48px" onkeydown="if(event.key==='Enter')doLogin()"/>
+        <button class="show-pw" onclick="togglePw()" id="pwToggle">Show</button>
+      </div>
+    </div>
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">Sign in</button>
+    <div class="login-footer">Don't have access yet? <span>Apply to become a vendor</span> on PakPicks.</div>
+  </div>
+</div>
+
+<div class="layout" id="portalLayout" style="display:none;">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <svg class="geom-bg" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="gp" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
+          <polygon points="15,2 28,8 28,22 15,28 2,22 2,8" fill="none" stroke="#C9A84C" stroke-width="0.8"/>
+          <polygon points="15,8 22,12 22,18 15,22 8,18 8,12" fill="none" stroke="#C9A84C" stroke-width="0.5"/>
+          <circle cx="15" cy="15" r="2" fill="#C9A84C" opacity="0.4"/>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#gp)"/>
+    </svg>
+    <div class="sidebar-logo">
+      <div class="logo-mark">P</div>
+      <div class="logo-text">
+        <div class="brand">PakPicks</div>
+        <div class="sub">Vendor Portal</div>
+      </div>
+    </div>
+    <div class="vendor-chip">
+      <div class="vname">Zara Textiles</div>
+      <div class="vsub">Lahore · Handcrafted Textiles</div>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')">
+        <span class="nav-icon">◈</span><span class="nav-label">Dashboard</span>
+      </button>
+      <button class="nav-item" data-page="products" onclick="navigate('products')">
+        <span class="nav-icon">⊞</span><span class="nav-label">My Products</span>
+      </button>
+      <button class="nav-item" data-page="orders" onclick="navigate('orders')">
+        <span class="nav-icon">◻</span><span class="nav-label">Orders</span><span class="nav-badge">7</span>
+      </button>
+      <button class="nav-item" data-page="analytics" onclick="navigate('analytics')">
+        <span class="nav-icon">◇</span><span class="nav-label">Analytics</span>
+      </button>
+      <button class="nav-item" data-page="support" onclick="navigate('support')">
+        <span class="nav-icon">◎</span><span class="nav-label">Support</span>
+      </button>
+      <button class="nav-item" data-page="settings" onclick="navigate('settings')">
+        <span class="nav-icon">◉</span><span class="nav-label">Settings</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="collapse-btn" onclick="toggleSidebar()">
+        <span class="collapse-arrow" id="collapseArrow">‹‹</span>
+        <span class="collapse-label">Collapse</span>
+      </button>
+      <button class="collapse-btn" onclick="doLogout()" style="color:rgba(209,100,100,.7);margin-top:2px;">
+        <span>⏻</span>
+        <span class="collapse-label">Sign out</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="topbarTitle">Dashboard</div>
+        <div class="topbar-sub" id="topbarSub">Zara Textiles · Lahore</div>
+      </div>
+      <div class="topbar-right">
+        <div id="topbarAction"></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="avatar">F</div>
+          <div class="avatar-info">
+            <div class="aname">Fatima Malik</div>
+            <div class="arole">Vendor</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="page">
+      <div id="pageContent" class="page-content"></div>
+    </div>
+  </div>
+</div><!-- end portalLayout -->
+
+<!-- TOAST -->
+<div class="toast" id="toast" style="display:none;">
+  <span id="toastIcon">✓</span>
+  <span id="toastMsg"></span>
+  <button class="toast-close" onclick="hideToast()">×</button>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const PRODUCTS = [
+  {id:"P001",name:"Hand-block Ajrak Dupatta",cat:"Dupattas",price:3200,stock:14,status:"active",orders:23,icon:"🧣"},
+  {id:"P002",name:"Sindhi Embroidered Kurta",cat:"Kurtas",price:4800,stock:6,status:"active",orders:18,icon:"👘"},
+  {id:"P003",name:"Hand-woven Khes Shawl",cat:"Shawls",price:5500,stock:0,status:"out_of_stock",orders:31,icon:"🧤"},
+  {id:"P004",name:"Truck Art Canvas Tote",cat:"Accessories",price:1800,stock:22,status:"active",orders:45,icon:"👜"},
+  {id:"P005",name:"Blue Pottery Mug Set",cat:"Homeware",price:2400,stock:8,status:"pending",orders:0,icon:"🫖"},
+  {id:"P006",name:"Rilli Patchwork Cushion",cat:"Homeware",price:1600,stock:3,status:"active",orders:12,icon:"🛋️"},
+];
+
+const ORDERS = [
+  {id:"ORD-2841",customer:"Ayesha K.",product:"Hand-block Ajrak Dupatta",qty:1,amount:3200,status:"new",date:"Today, 9:14 AM",city:"Karachi"},
+  {id:"ORD-2839",customer:"Sana R.",product:"Truck Art Canvas Tote",qty:2,amount:3600,status:"confirmed",date:"Today, 7:02 AM",city:"Islamabad"},
+  {id:"ORD-2831",customer:"Nadia H.",product:"Sindhi Embroidered Kurta",qty:1,amount:4800,status:"shipped",date:"Yesterday",city:"Lahore"},
+  {id:"ORD-2820",customer:"Rabia M.",product:"Rilli Patchwork Cushion",qty:3,amount:4800,status:"delivered",date:"Jun 19",city:"Peshawar"},
+  {id:"ORD-2815",customer:"Hina T.",product:"Hand-block Ajrak Dupatta",qty:2,amount:6400,status:"delivered",date:"Jun 18",city:"Multan"},
+  {id:"ORD-2810",customer:"Amna B.",product:"Truck Art Canvas Tote",qty:1,amount:1800,status:"cancelled",date:"Jun 17",city:"Faisalabad"},
+];
+
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const REVENUE = [18200,22400,19800,31500,27900,38200,41800,36400,44200,39600,47800,52300];
+const CATEGORIES = ["Dupattas","Kurtas","Shawls","Accessories","Homeware","Jewelry","Footwear","Kids"];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let currentPage = "dashboard";
+let sidebarCollapsed = false;
+let selectedOrder = null;
+let productFilter = "all";
+let orderFilter = "all";
+let productSearch = "";
+let addingProduct = false;
+let supportSent = false;
+
+const NEXT_STATUS = {new:"confirmed",confirmed:"shipped",shipped:"delivered"};
+
+// ── BADGE ─────────────────────────────────────────────────────────────────────
+const BADGE_MAP = {
+  active:{label:"Active",bg:"#EAF5EF",color:"#2D8A5E"},
+  pending:{label:"Pending Review",bg:"#FEF9EC",color:"#B07D1A"},
+  out_of_stock:{label:"Out of Stock",bg:"#FDECEA",color:"#D64045"},
+  new:{label:"New",bg:"#EBF3FD",color:"#1A5FAD"},
+  confirmed:{label:"Confirmed",bg:"#EAF5EF",color:"#2D8A5E"},
+  shipped:{label:"Shipped",bg:"#F0EBFD",color:"#6B3FD6"},
+  delivered:{label:"Delivered",bg:"#F7F4EF",color:"#6B7A8D"},
+  cancelled:{label:"Cancelled",bg:"#FDECEA",color:"#D64045"},
+  open:{label:"Open",bg:"#EBF3FD",color:"#1A5FAD"},
+  resolved:{label:"Resolved",bg:"#EAF5EF",color:"#2D8A5E"},
+};
+function badge(status){
+  const s = BADGE_MAP[status]||{label:status,bg:"#E8EDF2",color:"#6B7A8D"};
+  return `<span class="badge" style="background:${s.bg};color:${s.color}">${s.label}</span>`;
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg,type="success"){
+  const t=document.getElementById("toast");
+  document.getElementById("toastMsg").textContent=msg;
+  document.getElementById("toastIcon").textContent=type==="success"?"✓":"!";
+  t.style.display="flex";
+  t.style.background=type==="success"?"#0F1C2E":"#D64045";
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.style.display="none",3800);
+}
+function hideToast(){document.getElementById("toast").style.display="none";}
+
+// ── SIDEBAR ───────────────────────────────────────────────────────────────────
+function toggleSidebar(){
+  sidebarCollapsed=!sidebarCollapsed;
+  document.getElementById("sidebar").classList.toggle("collapsed",sidebarCollapsed);
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────────
+const PAGE_META = {
+  dashboard:{title:"Dashboard",sub:"Zara Textiles · Lahore"},
+  products:{title:"My Products",sub:"6 products in your store"},
+  orders:{title:"Orders",sub:"Manage and update your incoming orders"},
+  analytics:{title:"Analytics",sub:"Sales performance and trends"},
+  support:{title:"Support",sub:"Get help from the PakPicks team"},
+  settings:{title:"Settings",sub:"Store profile and account preferences"},
+};
+
+function navigate(page){
+  currentPage=page;
+  addingProduct=false;
+  selectedOrder=null;
+  document.querySelectorAll(".nav-item").forEach(el=>{
+    el.classList.toggle("active",el.dataset.page===page);
+  });
+  const meta=PAGE_META[page];
+  document.getElementById("topbarTitle").textContent=meta.title;
+  document.getElementById("topbarSub").textContent=meta.sub;
+  document.getElementById("topbarAction").innerHTML="";
+  if(page==="products"){
+    document.getElementById("topbarAction").innerHTML=`<button class="btn btn-primary" onclick="openAddProduct()">+ Add Product</button>`;
+  }
+  render();
+}
+
+function render(){
+  const el=document.getElementById("pageContent");
+  if(addingProduct){el.innerHTML=renderAddProduct();return;}
+  switch(currentPage){
+    case"dashboard":el.innerHTML=renderDashboard();break;
+    case"products":el.innerHTML=renderProducts();break;
+    case"orders":el.innerHTML=renderOrders();break;
+    case"analytics":el.innerHTML=renderAnalytics();break;
+    case"support":el.innerHTML=renderSupport();break;
+    case"settings":el.innerHTML=renderSettings();break;
+  }
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────────
+function renderDashboard(){
+  const activeCount=PRODUCTS.filter(p=>p.status==="active").length;
+  return `
+  <div class="welcome-banner">
+    <svg viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg">
+      <defs><pattern id="gp2" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
+        <polygon points="15,2 28,8 28,22 15,28 2,22 2,8" fill="none" stroke="#C9A84C" stroke-width="0.8"/>
+        <circle cx="15" cy="15" r="2" fill="#C9A84C" opacity="0.4"/>
+      </pattern></defs>
+      <rect width="100%" height="100%" fill="url(#gp2)"/>
+    </svg>
+    <div class="welcome-content">
+      <div class="welcome-eyebrow">Good morning</div>
+      <div class="welcome-title">Welcome back, Fatima Malik</div>
+      <div class="welcome-sub">You have <span>7 new orders</span> waiting for action.</div>
+    </div>
+    <button class="welcome-btn" onclick="navigate('orders')">View Orders →</button>
+  </div>
+  <div class="stat-grid">
+    <div class="stat-card" style="border-top-color:#C9A84C">
+      <div class="stat-label">Total Revenue</div>
+      <div class="stat-value">Rs 284k</div>
+      <div class="stat-sub">All time</div>
+    </div>
+    <div class="stat-card" style="border-top-color:#1A3A5C">
+      <div class="stat-label">Total Orders</div>
+      <div class="stat-value">142</div>
+      <div class="stat-sub">All time</div>
+    </div>
+    <div class="stat-card" style="border-top-color:#D64045">
+      <div class="stat-label">Pending Orders</div>
+      <div class="stat-value">7</div>
+      <div class="stat-sub">Need action</div>
+    </div>
+    <div class="stat-card" style="border-top-color:#2D8A5E">
+      <div class="stat-label">Active Products</div>
+      <div class="stat-value">${activeCount}</div>
+      <div class="stat-sub">of ${PRODUCTS.length} total</div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Recent Orders</span>
+        <button class="card-link" onclick="navigate('orders')">See all →</button>
+      </div>
+      <table>
+        <thead><tr><th>Order</th><th>Customer</th><th>Product</th><th>Amount</th><th>Status</th></tr></thead>
+        <tbody>
+          ${ORDERS.slice(0,4).map((o,i)=>`
+          <tr><td class="mono" style="color:#1A3A5C;font-weight:700">${o.id}</td>
+          <td>${o.customer}</td>
+          <td style="color:#6B7A8D">${o.product}</td>
+          <td class="mono" style="font-weight:700">Rs ${o.amount.toLocaleString()}</td>
+          <td>${badge(o.status)}</td></tr>`).join("")}
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Product Health</span></div>
+      ${PRODUCTS.map(p=>`
+      <div class="health-item">
+        <span class="health-emoji">${p.icon}</span>
+        <div style="flex:1;min-width:0">
+          <div class="health-name">${p.name}</div>
+          <div class="health-sub">Stock: ${p.stock} · ${p.orders} sold</div>
+        </div>
+        ${badge(p.status)}
+      </div>`).join("")}
+    </div>
+  </div>`;
+}
+
+// ── PRODUCTS ──────────────────────────────────────────────────────────────────
+function renderProducts(){
+  const filters=["all","active","pending","out_of_stock"];
+  const filtered=PRODUCTS.filter(p=>{
+    const ms=p.name.toLowerCase().includes(productSearch.toLowerCase());
+    const mf=productFilter==="all"||p.status===productFilter;
+    return ms&&mf;
+  });
+  return `
+  <div style="display:flex;gap:12px;margin-bottom:20px;align-items:center;flex-wrap:wrap;">
+    <div class="search-wrap" style="min-width:200px;flex:1">
+      <span class="search-icon">⌕</span>
+      <input class="form-input" placeholder="Search products…" value="${productSearch}" oninput="productSearch=this.value;render()"/>
+    </div>
+    ${filters.map(f=>`<button class="filter-tab${productFilter===f?" active":""}" onclick="productFilter='${f}';render()">${f.replace("_"," ")}</button>`).join("")}
+  </div>
+  <div class="card">
+    <table>
+      <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Orders</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        ${filtered.length===0?`<tr><td colspan="7" style="text-align:center;padding:36px;color:#6B7A8D">No products match your search.</td></tr>`:
+        filtered.map(p=>`
+        <tr>
+          <td><div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:22px">${p.icon}</span>
+            <div><div style="font-weight:600">${p.name}</div><div class="mono" style="font-size:11px;color:#6B7A8D">${p.id}</div></div>
+          </div></td>
+          <td style="color:#6B7A8D">${p.cat}</td>
+          <td class="mono" style="font-weight:700">Rs ${p.price.toLocaleString()}</td>
+          <td style="font-weight:600;color:${p.stock===0?"#D64045":p.stock<5?"#B07D1A":"#0F1C2E"}">${p.stock===0?"—":p.stock}</td>
+          <td style="color:#6B7A8D">${p.orders}</td>
+          <td>${badge(p.status)}</td>
+          <td><button class="btn btn-ghost btn-sm" onclick="showToast('Edit feature coming soon.')">Edit</button></td>
+        </tr>`).join("")}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function openAddProduct(){
+  addingProduct=true;
+  document.getElementById("topbarTitle").textContent="Add New Product";
+  document.getElementById("topbarSub").textContent="Fill in the details and submit for review";
+  document.getElementById("topbarAction").innerHTML=`<button class="btn btn-ghost" onclick="addingProduct=false;navigate('products')">← Back to Products</button>`;
+  render();
+}
+
+function renderAddProduct(){
+  return `
+  <div style="max-width:760px;margin:0 auto;">
+    <div class="info-banner">ⓘ  New products go to PakPicks for review before publishing. Usually approved within 24 hours.</div>
+    <div class="grid-2">
+      <div class="card" style="padding:22px;">
+        <div style="font-weight:700;color:#0F1C2E;font-size:14px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #E8EDF2">Product Details</div>
+        <div class="form-group"><label class="form-label">Product name <span class="req">*</span></label>
+          <input class="form-input" id="ap_name" placeholder="e.g. Hand-block Ajrak Dupatta"/></div>
+        <div class="form-group"><label class="form-label">Category <span class="req">*</span></label>
+          <select class="form-select" id="ap_cat"><option value="">Select…</option>${CATEGORIES.map(c=>`<option>${c}</option>`).join("")}</select></div>
+        <div class="grid-2">
+          <div class="form-group"><label class="form-label">Price (Rs) <span class="req">*</span></label>
+            <input class="form-input" id="ap_price" type="number" placeholder="3200"/></div>
+          <div class="form-group"><label class="form-label">Sale price (Rs)</label>
+            <input class="form-input" id="ap_sale" type="number" placeholder="Optional"/>
+            <div class="form-hint">Leave blank if no sale</div></div>
+        </div>
+        <div class="form-group"><label class="form-label">Stock quantity <span class="req">*</span></label>
+          <input class="form-input" id="ap_stock" type="number" placeholder="e.g. 10"/></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="card" style="padding:22px;">
+          <div style="font-weight:700;color:#0F1C2E;font-size:14px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #E8EDF2">Description</div>
+          <div class="form-group"><label class="form-label">Product description <span class="req">*</span></label>
+            <textarea class="form-textarea" id="ap_desc" rows="5" placeholder="Describe your product — materials, size, care instructions…"></textarea></div>
+        </div>
+        <div class="card" style="padding:22px;">
+          <div style="font-weight:700;color:#0F1C2E;font-size:14px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #E8EDF2">Images</div>
+          <div class="upload-zone">
+            <div style="font-size:28px;margin-bottom:6px">⊕</div>
+            <div style="font-size:13px;font-weight:600;color:#0F1C2E">Upload product images</div>
+            <div style="font-size:12px;margin-top:4px">JPG, PNG up to 5MB · Up to 6 images</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">
+      <button class="btn btn-ghost" onclick="addingProduct=false;navigate('products')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitProduct()">Submit for Review</button>
+    </div>
+  </div>`;
+}
+
+function submitProduct(){
+  const name=document.getElementById("ap_name").value;
+  const cat=document.getElementById("ap_cat").value;
+  const price=document.getElementById("ap_price").value;
+  const stock=document.getElementById("ap_stock").value;
+  if(!name||!cat||!price||!stock){showToast("Please fill all required fields.","error");return;}
+  addingProduct=false;
+  navigate("products");
+  showToast("Product submitted for review.","success");
+}
+
+// ── ORDERS ────────────────────────────────────────────────────────────────────
+function renderOrders(){
+  const tabs=["all","new","confirmed","shipped","delivered","cancelled"];
+  const filtered=orderFilter==="all"?ORDERS:ORDERS.filter(o=>o.status===orderFilter);
+  const panel=selectedOrder?`
+  <div class="detail-panel" style="min-width:280px">
+    <div class="card-header">
+      <span class="card-title">${selectedOrder.id}</span>
+      <button onclick="selectedOrder=null;render()" style="background:none;border:none;color:#6B7A8D;cursor:pointer;font-size:20px">×</button>
+    </div>
+    <div style="padding:18px;">
+      <div style="margin-bottom:14px">${badge(selectedOrder.status)}</div>
+      ${[["Customer",selectedOrder.customer],["City",selectedOrder.city],["Product",selectedOrder.product],["Quantity",selectedOrder.qty],["Order Total","Rs "+selectedOrder.amount.toLocaleString()],["Date",selectedOrder.date]].map(([k,v])=>`
+      <div class="detail-row"><span class="detail-key">${k}</span><span class="detail-val ${k==="Order Total"?"mono":""}">${v}</span></div>`).join("")}
+      ${NEXT_STATUS[selectedOrder.status]?`<button class="btn btn-primary" style="width:100%;margin-top:16px" onclick="advanceOrder('${selectedOrder.id}')">Mark as ${NEXT_STATUS[selectedOrder.status].charAt(0).toUpperCase()+NEXT_STATUS[selectedOrder.status].slice(1)} →</button>`:""}
+      ${selectedOrder.status==="new"?`<button class="btn btn-danger" style="width:100%;margin-top:8px" onclick="showToast('Order cancelled.')">Cancel Order</button>`:""}
+    </div>
+  </div>`:"";;
+  return `
+  <div class="filter-tabs">
+    ${tabs.map(f=>`<button class="filter-tab${orderFilter===f?" active":""}" onclick="orderFilter='${f}';render()">${f}${f==="new"?" (7)":""}</button>`).join("")}
+  </div>
+  <div style="display:grid;grid-template-columns:${selectedOrder?"1fr 300px":"1fr"};gap:20px;align-items:start;">
+    <div class="card">
+      <table>
+        <thead><tr><th>Order ID</th><th>Customer</th><th>Product</th><th>Qty</th><th>Amount</th><th>City</th><th>Date</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${filtered.map(o=>`
+          <tr class="clickable${selectedOrder&&selectedOrder.id===o.id?" row-selected":""}" onclick="selectedOrder=${JSON.stringify(o).replace(/"/g,"&quot;")};render()">
+            <td class="mono" style="color:#1A3A5C;font-weight:700">${o.id}</td>
+            <td style="font-weight:500">${o.customer}</td>
+            <td style="color:#6B7A8D;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.product}</td>
+            <td style="text-align:center">${o.qty}</td>
+            <td class="mono" style="font-weight:700">Rs ${o.amount.toLocaleString()}</td>
+            <td style="color:#6B7A8D">${o.city}</td>
+            <td style="color:#6B7A8D;white-space:nowrap;font-size:12px">${o.date}</td>
+            <td>${badge(o.status)}</td>
+            <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();selectedOrder=${JSON.stringify(o).replace(/"/g,"&quot;")};render()">View</button></td>
+          </tr>`).join("")}
+        </tbody>
+      </table>
+    </div>
+    ${panel}
+  </div>`;
+}
+
+function advanceOrder(id){
+  const o=ORDERS.find(x=>x.id===id);
+  if(o&&NEXT_STATUS[o.status]){
+    const next=NEXT_STATUS[o.status];
+    showToast(`Order ${id} marked as ${next}.`,"success");
+    o.status=next;
+    selectedOrder=o;
+    render();
+  }
+}
+
+// ── ANALYTICS ─────────────────────────────────────────────────────────────────
+function renderAnalytics(){
+  const maxR=Math.max(...REVENUE);
+  const bars=REVENUE.map((v,i)=>`
+  <div class="bar-col">
+    <div class="bar-fill${i===11?" current":i>=9?" recent":""}" style="height:${Math.round((v/maxR)*130)}px;position:relative">
+      ${i===11?`<div style="position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:700;color:#C9A84C;white-space:nowrap;font-family:'DM Mono',monospace">Peak</div>`:""}
+    </div>
+    <div class="bar-label">${MONTHS[i]}</div>
+  </div>`).join("");
+  const sorted=[...PRODUCTS].sort((a,b)=>b.orders-a.orders);
+  return `
+  <div class="grid-3-4">
+    <div class="stat-card" style="border-top-color:#C9A84C">
+      <div class="stat-label">This Month</div><div class="stat-value">Rs 52.3k</div><div class="stat-sub">↑ 9.4% vs last month</div>
+    </div>
+    <div class="stat-card" style="border-top-color:#1A3A5C">
+      <div class="stat-label">Avg Order Value</div><div class="stat-value">Rs 2,850</div><div class="stat-sub">Across all orders</div>
+    </div>
+    <div class="stat-card" style="border-top-color:#2D8A5E">
+      <div class="stat-label">Repeat Customers</div><div class="stat-value">38%</div><div class="stat-sub">Ordered more than once</div>
+    </div>
+  </div>
+  <div class="card" style="padding:24px;margin-bottom:20px;">
+    <div class="card-title" style="margin-bottom:20px">Monthly Revenue (2024)</div>
+    <div class="bar-chart">${bars}</div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Top Products by Sales</span></div>
+    ${sorted.map((p,i)=>`
+    <div style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid #E8EDF2">
+      <div class="mono" style="width:24px;color:#6B7A8D;font-weight:700">#${i+1}</div>
+      <span style="font-size:22px">${p.icon}</span>
+      <div style="flex:1"><div style="font-size:13px;font-weight:600;color:#0F1C2E">${p.name}</div><div style="font-size:11px;color:#6B7A8D">${p.cat}</div></div>
+      <div style="text-align:right"><div class="mono" style="font-weight:700;font-size:13px">${p.orders} sold</div><div style="font-size:11px;color:#6B7A8D">Rs ${(p.orders*p.price).toLocaleString()}</div></div>
+      <div class="prog-wrap"><div class="prog-track"><div class="prog-fill" style="width:${Math.round((p.orders/45)*100)}%"></div></div></div>
+    </div>`).join("")}
+  </div>`;
+}
+
+// ── SUPPORT ───────────────────────────────────────────────────────────────────
+function renderSupport(){
+  const TICKETS=[
+    {id:"T-091",subject:"Payment not received for ORD-2810",status:"resolved",date:"Jun 15"},
+    {id:"T-088",subject:"Product image not showing on listing",status:"open",date:"Jun 10"},
+  ];
+  const form=supportSent?`
+  <div class="success-box">
+    <div style="font-size:28px;margin-bottom:8px">✓</div>
+    <div style="font-weight:700;color:#2D8A5E;margin-bottom:4px">Message sent</div>
+    <div style="font-size:13px;color:#6B7A8D">We'll get back to you within 4 hours.</div>
+    <button class="btn btn-ghost" style="margin-top:14px;font-size:13px" onclick="supportSent=false;render()">Send another message</button>
+  </div>`:`
+  <div class="form-group"><label class="form-label">Subject <span class="req">*</span></label>
+    <input class="form-input" id="sp_sub" placeholder="e.g. Issue with order ORD-2841"/></div>
+  <div class="form-group"><label class="form-label">Message <span class="req">*</span></label>
+    <textarea class="form-textarea" id="sp_msg" rows="5" placeholder="Describe your issue in detail…"></textarea></div>
+  <button class="btn btn-primary" onclick="sendSupport()">Send Message</button>`;
+  return `
+  <div class="grid-2">
+    <div class="card" style="padding:24px;">
+      <div class="card-title" style="margin-bottom:6px">Contact PakPicks Team</div>
+      <div style="font-size:13px;color:#6B7A8D;margin-bottom:20px">We typically respond within 4 business hours.</div>
+      ${form}
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header"><span class="card-title">Your Tickets</span></div>
+        ${TICKETS.map(t=>`
+        <div style="padding:16px 20px;border-bottom:1px solid #E8EDF2;display:flex;align-items:center;gap:12px">
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600;color:#0F1C2E;margin-bottom:3px">${t.subject}</div>
+            <div class="mono" style="font-size:11px;color:#6B7A8D">${t.id} · ${t.date}</div>
+          </div>
+          ${badge(t.status)}
+        </div>`).join("")}
+      </div>
+      <div style="background:#F7F4EF;border:1px solid #E8EDF2;border-radius:12px;padding:20px">
+        <div style="font-weight:700;color:#0F1C2E;font-size:14px;margin-bottom:12px">Quick answers</div>
+        ${["How long does product review take?","When do I receive my payment?","How do I update my store profile?"].map(q=>`
+        <div class="faq-item">${q} <span style="color:#C9A84C">→</span></div>`).join("")}
+      </div>
+    </div>
+  </div>`;
+}
+
+function sendSupport(){
+  const sub=document.getElementById("sp_sub").value;
+  const msg=document.getElementById("sp_msg").value;
+  if(!sub||!msg){showToast("Please fill all fields.","error");return;}
+  supportSent=true;render();
+}
+
+// ── SETTINGS ──────────────────────────────────────────────────────────────────
+function renderSettings(){
+  return `
+  <div style="max-width:700px">
+    <div class="card" style="padding:24px;margin-bottom:20px">
+      <div style="font-weight:700;color:#0F1C2E;font-size:15px;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid #E8EDF2">Store Profile</div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Brand / Store name <span class="req">*</span></label>
+          <input class="form-input" value="Zara Textiles"/></div>
+        <div class="form-group"><label class="form-label">Owner name <span class="req">*</span></label>
+          <input class="form-input" value="Fatima Malik"/></div>
+        <div class="form-group"><label class="form-label">Email <span class="req">*</span></label>
+          <input class="form-input" type="email" value="fatima@zaratextiles.pk"/></div>
+        <div class="form-group"><label class="form-label">Phone</label>
+          <input class="form-input" value="0321-4456789"/></div>
+        <div class="form-group"><label class="form-label">City</label>
+          <input class="form-input" value="Lahore"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Store description</label>
+        <textarea class="form-textarea" rows="3">Handcrafted Pakistani textiles — block print, embroidery, and woven fabrics made by skilled artisans across Sindh and Punjab.</textarea></div>
+    </div>
+    <div class="card" style="padding:24px;margin-bottom:20px">
+      <div style="font-weight:700;color:#0F1C2E;font-size:15px;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid #E8EDF2">Social Media</div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Instagram</label>
+          <input class="form-input" value="@zaratextiles" placeholder="@handle"/></div>
+        <div class="form-group"><label class="form-label">Facebook</label>
+          <input class="form-input" value="ZaraTextilesPk"/></div>
+      </div>
+    </div>
+    <div class="card" style="padding:24px;margin-bottom:20px">
+      <div style="font-weight:700;color:#0F1C2E;font-size:15px;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid #E8EDF2">Change Password</div>
+      <div class="grid-3">
+        <div class="form-group"><label class="form-label">Current password</label>
+          <input class="form-input" type="password" placeholder="••••••••"/></div>
+        <div class="form-group"><label class="form-label">New password</label>
+          <input class="form-input" type="password" placeholder="••••••••"/></div>
+        <div class="form-group"><label class="form-label">Confirm new password</label>
+          <input class="form-input" type="password" placeholder="••••••••"/></div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px">
+      <button class="btn btn-ghost">Discard changes</button>
+      <button class="btn btn-primary" onclick="showToast('Settings saved successfully.')">Save changes</button>
+    </div>
+  </div>`;
+}
+
+// ── APPROVED VENDORS (you control this list) ──────────────────────────────────
+// To add a new vendor: add another entry below as { email, password, name, store, city }
+const APPROVED_VENDORS = [
+  { email: "fatima@zaratextiles.pk",  password: "zara2024",    name: "Fatima Malik",  store: "Zara Textiles",       city: "Lahore"     },
+  { email: "ahmed@craftpakistan.pk",  password: "craft#786",   name: "Ahmed Raza",    store: "Craft Pakistan",      city: "Karachi"    },
+  { email: "sana@bluepottery.pk",     password: "pottery@99",  name: "Sana Mirza",    store: "Blue Pottery Co.",    city: "Multan"     },
+];
+
+let loggedInVendor = null;
+
+// ── LOGIN / LOGOUT ────────────────────────────────────────────────────────────
+function doLogin(){
+  const email    = document.getElementById("loginEmail").value.trim().toLowerCase();
+  const password = document.getElementById("loginPassword").value;
+  const error    = document.getElementById("loginError");
+  const btn      = document.getElementById("loginBtn");
+
+  btn.textContent = "Signing in…";
+  btn.disabled = true;
+
+  // Simulate a short delay so it feels like a real auth check
+  setTimeout(()=>{
+    const vendor = APPROVED_VENDORS.find(v => v.email === email && v.password === password);
+    if(vendor){
+      loggedInVendor = vendor;
+      error.classList.remove("show");
+      // Update sidebar vendor chip with real vendor data
+      document.querySelector(".vendor-chip .vname").textContent = vendor.store;
+      document.querySelector(".vendor-chip .vsub").textContent  = vendor.city;
+      document.querySelector(".avatar-info .aname").textContent = vendor.name;
+      document.querySelector(".avatar").textContent             = vendor.name.charAt(0);
+      // Show portal, hide login
+      document.getElementById("loginScreen").style.display  = "none";
+      document.getElementById("portalLayout").style.display = "flex";
+      navigate("dashboard");
+    } else {
+      error.classList.add("show");
+      btn.textContent = "Sign in";
+      btn.disabled = false;
+      document.getElementById("loginPassword").value = "";
+    }
+  }, 700);
+}
+
+function doLogout(){
+  loggedInVendor = null;
+  document.getElementById("portalLayout").style.display = "none";
+  document.getElementById("loginScreen").style.display  = "flex";
+  document.getElementById("loginEmail").value    = "";
+  document.getElementById("loginPassword").value = "";
+  document.getElementById("loginError").classList.remove("show");
+  document.getElementById("loginBtn").textContent = "Sign in";
+  document.getElementById("loginBtn").disabled    = false;
+}
+
+function togglePw(){
+  const input  = document.getElementById("loginPassword");
+  const toggle = document.getElementById("pwToggle");
+  if(input.type === "password"){ input.type = "text";  toggle.textContent = "Hide"; }
+  else                         { input.type = "password"; toggle.textContent = "Show"; }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+// Portal starts hidden — login screen shows first
+render();
+</script>
+</body>
+</html>
